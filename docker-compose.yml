@@ -1,0 +1,41 @@
+version: "3.3"
+
+services: 
+  nifi_001:
+    build: docker/nifi
+    container_name: nifi
+    restart: always
+    ports: 
+      - ${NIFI_PORT:-8080}:8080
+    volumes: 
+      - ./nifi/drivers:/nifi/drivers
+      - ./nifi/temp:/nifi/temp
+      - ./nifi/templates:/nifi/templates
+      - ${SHARED_PATH}:/data_repository
+    networks: 
+      - nifiNet
+
+  nifi_mariadb_001:
+    image: mariadb
+    container_name: nifi_mariadb
+    restart: always
+    ports:
+      - ${MYSQL_PORT:-3306}:3306
+    volumes:
+      - mariaDbVolume:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PSW:-secret}
+      MYSQL_DATABASE: ${MYSQL_DB:-ookla}
+      MYSQL_USER: ${MYSQL_USER:-ookla}
+      MYSQL_PASSWORD: ${MYSQL_PSW:-secret}
+    networks: 
+      - nifiNet
+
+
+networks:
+  nifiNet:
+    driver: "bridge"
+      
+      
+volumes:
+  mariaDbVolume:
